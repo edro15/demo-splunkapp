@@ -13,6 +13,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      old_version: ${{ steps.bumpversion.outputs.old_ver }}
+      version: ${{ steps.bumpversion.outputs.new_ver }}
     # TODO maybe verify bumpType is valid (major, minor, patch)
     steps:
       - name: Checkout source
@@ -33,3 +36,33 @@ jobs:
         run: |
           remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
           git push "${remote_repo}" HEAD:${GITHUB_REF} --follow-tags --tags
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.build.outputs.version }}
+          release_name: Release/${{ needs.build.outputs.version }}
+          body: |
+            ## Version ${{ needs.build.outputs.version }}
+            **TODO: Insert CHANGELOG.md contents here.**
+          draft: false
+          prerelease: false
+  
+  publish:
+    needs: release
+    name: Deploy Release to Splunkbase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder for publish
+        run: |
+          echo "Placeholder for Splunkbase upload"
