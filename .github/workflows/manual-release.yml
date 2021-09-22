@@ -51,6 +51,7 @@ jobs:
       - name: Build changelog
         id: changelog
         run: |
+          git tag -l
           MSG=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate --pretty=format:%s)
           echo "::set-output name=message:${MSG}"
       
