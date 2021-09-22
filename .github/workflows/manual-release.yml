@@ -49,9 +49,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      # - name: Pulling last commit and tag
-      #   run: git pull
-      
       - name: Build changelog
         id: changelog
         run: |
@@ -74,7 +71,7 @@ jobs:
           body: |
             ## Changelog
             ${{ github.event.inputs.notes }}
-            ${{ fromJSON(steps.changelog.outputs.message) }}
+            ${{ steps.changelog.outputs.message }}
           draft: false
           prerelease: false
   
