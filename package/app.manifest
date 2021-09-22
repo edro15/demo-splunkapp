@@ -5,7 +5,7 @@
     "id": {
       "group": null,
       "name": "splunk_app_for_testing",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     "author": [
       {
