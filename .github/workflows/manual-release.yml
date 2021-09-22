@@ -27,3 +27,5 @@ jobs:
       - name: Testing bumping
         run: |
           echo "Created new tag: ${{ steps.bumpversion.outputs.new_tag }}"
+          echo "Created new version: ${{ steps.bumpversion.outputs.new_ver }}"
+          echo "Created part: ${{ steps.bumpversion.outputs.part }}"
