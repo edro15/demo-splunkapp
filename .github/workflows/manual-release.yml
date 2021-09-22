@@ -1,0 +1,29 @@
+# This is a basic workflow that is manually triggered
+
+name: Bump Version
+
+on: 
+  workflow_dispatch:
+    inputs:
+      bumpType:
+        description: 'Bump type'
+        required: true
+        default: "minor"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # TODO maybe verify bumpType is valid
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: bumpversion
+        uses: jaumann/github-bumpversion-action@v0.0.7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: ${{ github.event.inputs.bumpType }}
+          DRY_RUN: true
+      - name: Testing bumping
+        run: |
+          echo "Created new tag: ${{ steps.bumpversion.outputs.new_tag }}"

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title": "Test app",
+    "id": {
+      "group": null,
+      "name": "splunk_app_for_testing",
+      "version": "0.0.1"
+    },
+    "author": [
+      {
+        "name": "Erica Pescio",
+        "email": null,
+        "company": null
+      }
+    ],
+    "releaseDate": null,
+    "description": null,
+    "classification": {
+      "intendedAudience": null,
+      "categories": [
+        "IT Operations",
+        "Security, Fraud & Compliance"
+      ],
+      "developmentStatus": null
+    },
+    "commonInformationModels": null,
+    "license": {
+      "name": "Splunk Software License Agreement",
+      "text": null,
+      "uri": "https://www.splunk.com/en_us/legal/splunk-software-license-agreement.html"
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "releaseNotes": {
+      "name": "README",
+      "text": "README.md",
+      "uri": null
+    }
+  },
+  "dependencies": null,
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": null,
+  "platformRequirements": null,
+  "supportedDeployments": [
+    "*"
+  ],
+  "targetWorkloads": [
+    "*"
+  ]
+}
