@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    name: Run bump 
+    name: Run Bump 
     runs-on: ubuntu-latest
     outputs:
       old_version: ${{ steps.bumpversion.outputs.old_ver }}
@@ -55,6 +55,7 @@ jobs:
       - name: Build changelog
         id: changelog
         run: |
+          git tag -l
           MSG=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
           echo "::set-output name=message:${MSG}"
       
