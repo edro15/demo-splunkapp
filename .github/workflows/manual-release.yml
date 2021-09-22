@@ -57,7 +57,8 @@ jobs:
         run: |
           git fetch --unshallow --tags
           git tag -l
-          MSG=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
+          MSG_RAW=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
+          MSG=$(printf '%s' "$MSG_RAW" | jq --raw-input --slurp '.')
           echo "::set-output name=message:${MSG}"
       
       - name: Create Release
@@ -70,7 +71,7 @@ jobs:
           body: |
             ## Changelog
             ${{ github.event.inputs.notes }}
-            ${{ steps.changelog.outputs.message }}
+            ${{ fromJSON(steps.changelog.outputs.message) }}
           draft: false
           prerelease: false
   
