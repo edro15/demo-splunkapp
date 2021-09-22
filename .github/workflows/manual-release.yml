@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Bump Version
+name: Manual Release
 
 on: 
   workflow_dispatch:
@@ -9,6 +9,7 @@ on:
         description: 'Bump type'
         required: true
         default: "minor"
+        # TODO can this be a dropdown? Input validation?
       notes:
         description: 'Changelog notes'
         required: false
@@ -54,8 +55,7 @@ jobs:
         run: |
           git fetch --unshallow --tags
           git tag -l
-          MSG_RAW=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
-          content=$(printf '%s' "$MSG_RAW" | jq --raw-input --slurp '.')
+          content=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
