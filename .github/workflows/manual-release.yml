@@ -23,9 +23,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: ${{ github.event.inputs.bumpType }}
-          DRY_RUN: true
+          # DRY_RUN: true
       - name: Testing bumping
         run: |
-          echo "Created new tag: ${{ steps.bumpversion.outputs.new_tag }}"
-          echo "Created new version: ${{ steps.bumpversion.outputs.new_ver }}"
-          echo "Created part: ${{ steps.bumpversion.outputs.part }}"
+          echo "Old version: ${{ steps.bumpversion.outputs.old_ver }}"
+          echo "New version: ${{ steps.bumpversion.outputs.new_ver }}"
+          echo "Bump type: ${{ steps.bumpversion.outputs.part }}"
