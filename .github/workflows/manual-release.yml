@@ -49,12 +49,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Pulling last commit and tag
-        run: git pull
+      # - name: Pulling last commit and tag
+      #   run: git pull
       
       - name: Build changelog
         id: changelog
         run: |
+          git fetch --unshallow --tags
           git tag -l
           MSG=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
           echo "::set-output name=message:${MSG}"
