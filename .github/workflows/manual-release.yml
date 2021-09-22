@@ -58,8 +58,11 @@ jobs:
           git fetch --unshallow --tags
           git tag -l
           MSG_RAW=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
-          MSG=$(printf '%s' "$MSG_RAW" | jq --raw-input --slurp '.')
-          echo "::set-output name=message:${MSG}"
+          content=$(printf '%s' "$MSG_RAW" | jq --raw-input --slurp '.')
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=message:$content"
       
       - name: Create Release
         uses: actions/create-release@v1
