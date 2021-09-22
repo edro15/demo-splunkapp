@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - "master"
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  find_version:
+    name: Find Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Get version
+        id: get-version
+        run: |
+          TAG=$(git describe HEAD --tags --abbrev=0)
+          echo "::set-output name=version:${TAG}"
+
+  release:
+    name: Create Release
+    needs: find_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.find_version.outputs.version }}
+          release_name: Release/${{ needs.find_version.outputs.version }}
+          body: |
+            ## Version ${{ needs.find_version.outputs.version }}
+            **TODO: Insert CHANGELOG.md contents here.**
+          draft: false
+          prerelease: false
+  
+  publish:
+    needs: release
+    name: Deploy Release to Splunkbase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder for publish
+        run: |
+          echo "Placeholder for Splunkbase upload" 
