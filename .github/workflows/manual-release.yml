@@ -24,8 +24,8 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
 
-      - name: Validate Bump Part
-        run: bumpPart=${{ github.event.inputs.bumpPart }} node .github/scripts/validateInputs.js
+      # - name: Validate Bump Part
+      #   run: bumpPart=${{ github.event.inputs.bumpPart }} node .github/scripts/validateInputs.js
 
       - name: Bump version and push tag
         id: bumpversion
