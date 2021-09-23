@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       bumpPart:
-        description: 'Bump type'
+        description: 'Bump part (major, minor or patch)'
         required: true
         default: "minor"
       notes:
@@ -14,8 +14,8 @@ on:
         required: false
 
 jobs:
-  build:
-    name: Run Bump 
+  tag-version:
+    name: Tag Version
     runs-on: ubuntu-latest
     outputs:
       old_version: ${{ steps.bumpversion.outputs.old_ver }}
@@ -26,16 +26,12 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
 
-      # - name: Validate Bump Part
-      #   run: bumpPart=${{ github.event.inputs.bumpPart }} node .github/scripts/validateInputs.js
-
       - name: Bump version and push tag
         id: bumpversion
         uses: jaumann/github-bumpversion-action@v0.0.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: ${{ github.event.inputs.bumpPart }}
-          # DRY_RUN: true
       # - name: Testing bumping
       #   run: |
       #     echo "Old version: ${{ steps.bumpversion.outputs.old_ver }}"
@@ -48,20 +44,20 @@ jobs:
 
   release:
     name: Create Release
-    needs: build
+    needs: tag-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Fetch tags
+      - name: Fetch all tags
         run: |
           git fetch --unshallow --tags
 
-      - name: Build changelog
+      - name: Build changelog message
         id: changelog
         run: |
-          content=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate --pretty=format:"%s")
+          content=$(git log v${{ needs.tag-version.outputs.old_version }}..v${{ needs.tag-version.outputs.version }} --oneline --decorate --pretty=format:"%s")
           content="${content//'%'/%25}"
           content="${content//$'\n'/%0A}"
           content="${content//$'\r'/%0D}"
@@ -76,11 +72,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ needs.build.outputs.version }}
-          release_name: v${{ needs.build.outputs.version }}
+          tag_name: v${{ needs.tag-version.outputs.version }}
+          release_name: v${{ needs.tag-version.outputs.version }}
           body: |
             ## Changelog
             ${{ github.event.inputs.notes }}
+
             ${{ steps.changelog.outputs.message }}
           draft: false
           prerelease: false
