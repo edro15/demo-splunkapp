@@ -1,0 +1,21 @@
+name: Regular CI
+
+on: push
+
+jobs:
+  build:
+    name: Build app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Packaging app
+        run: |
+          mkdir dist
+          tar -zcvf dist/demo-splunkapp.tgz package/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app_tgz
+          path: dist/demo-splunkapp.tgz
