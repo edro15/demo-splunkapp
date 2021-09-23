@@ -57,15 +57,14 @@ jobs:
       - name: Build changelog message
         id: changelog
         run: |
-          content=$(git log v${{ needs.tag-version.outputs.old_version }}..v${{ needs.tag-version.outputs.version }} --oneline --decorate --pretty=format:"%s")
+          content=$(git log v${{ needs.tag-version.outputs.old_version }}..v${{ needs.tag-version.outputs.version }} --oneline --decorate --pretty=format:"%s" | tail -n 1)
           content="${content//'%'/%25}"
           content="${content//$'\n'/%0A}"
           content="${content//$'\r'/%0D}"
-          echo ${content}
           echo "::set-output name=message::${content}"
 
-      - name: Testing changelog
-        run: echo "${{ steps.changelog.outputs.message }}"
+      # - name: Testing changelog
+      #   run: echo "${{ steps.changelog.outputs.message }}"
       
       - name: Create Release
         uses: actions/create-release@v1
