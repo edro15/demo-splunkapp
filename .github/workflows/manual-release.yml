@@ -79,11 +79,16 @@ jobs:
       - name: Build changelog message
         id: changelog
         run: |
-          content=$(git log v${{ needs.tag-version.outputs.old_version }}..v${{ needs.tag-version.outputs.version }} --oneline --decorate --pretty=format:"%s" | tail -n 1)
-          content="${content//'%'/%25}"
-          content="${content//$'\n'/%0A}"
-          content="${content//$'\r'/%0D}"
-          echo "::set-output name=message::${content}"
+          tags_no=$(git tag -l | wc -l)
+          if [[ "${tags_no}" > 1 ]]; then 
+            content=$(git log v${{ needs.tag-version.outputs.old_version }}..v${{ needs.tag-version.outputs.version }} --oneline --decorate --pretty=format:"%s" | tail -n 1)
+            content="${content//'%'/%25}"
+            content="${content//$'\n'/%0A}"
+            content="${content//$'\r'/%0D}"
+          else
+            content="Initial release"
+          fi
+          echo "::set-output name=message::${content}" 
 
       # - name: Testing changelog
       #   run: echo "${{ steps.changelog.outputs.message }}"
