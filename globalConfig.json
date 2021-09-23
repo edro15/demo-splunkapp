@@ -2,7 +2,7 @@
     "meta": {
         "name": "splunk_app_for_testing",
         "displayName": "Test App",
-        "version": "0.8.5",
+        "version": "0.8.6",
         "restRoot": "splunk_app_for_testing",
         "schemaVersion": "0.0.3"
     },
