@@ -25,6 +25,12 @@ jobs:
           run: |
             mkdir dist
             tar -zcvf dist/demo-splunkapp.tgz package/
+        
+        - name: Uploading artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: app_tgz
+            path: dist/demo-splunkapp.tgz
 
   tag-version:
     name: Tag Version
@@ -96,9 +102,16 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Test package availability
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: app_tgz
+      
+      - name: Get name
+        id: app-name
         run: |
-          ls -la 
+          app_package=$(ls -1 *gz | xargs basename)
+          echo "::set-output name=package::${app_package}"
       
       - name: Upload Release Asset
         id: upload-release-asset 
@@ -107,8 +120,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/demo-splunkapp.tgz
-          asset_name: demo-splunkapp.tgz
+          asset_path: ${{ steps.app-name.outputs.package }}
+          asset_name: ${{ steps.app-name.outputs.package }}
           asset_content_type: application/tgz
   
   publish:
