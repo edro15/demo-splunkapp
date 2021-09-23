@@ -23,8 +23,10 @@ jobs:
         
         - name: Packaging app
           run: |
+            cp -r package/ output/
+            echo "This is just a test for verifying correct packaging" > output/README.md
             mkdir dist
-            tar -zcvf dist/demo-splunkapp.tgz package/
+            tar -zcvf dist/demo-splunkapp.tgz output/
         
         - name: Uploading artifact
           uses: actions/upload-artifact@v2
@@ -113,17 +115,25 @@ jobs:
           app_package=$(ls -1 *gz | xargs basename)
           echo "::set-output name=package::${app_package}"
       
+      # - name: Upload Release Asset
+      #   id: upload-release-asset 
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ steps.app-name.outputs.package }}
+      #     asset_name: ${{ steps.app-name.outputs.package }}
+      #     asset_content_type: application/tgz
+          # content type for tgz?? https://www.iana.org/assignments/media-types/media-types.xhtml
       - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.app-name.outputs.package }}
-          asset_name: ${{ steps.app-name.outputs.package }}
-          asset_content_type: application/tgz
+        run: |
+          gh release upload v${{ needs.tag-version.outputs.version }} '${{ steps.app-name.outputs.package }}#App Package'
   
+      - name: Test artifacts availability
+        run: |
+          gh api repos/${{ github.repository }}/actions/artifacts
+
   publish:
     needs: release
     name: Deploy Release to Splunkbase
