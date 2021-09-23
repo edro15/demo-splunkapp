@@ -5,11 +5,10 @@ name: Manual Release
 on: 
   workflow_dispatch:
     inputs:
-      bumpType:
+      bumpPart:
         description: 'Bump type'
         required: true
         default: "minor"
-        # TODO can this be a dropdown? Input validation?
       notes:
         description: 'Changelog notes'
         required: false
@@ -21,16 +20,19 @@ jobs:
     outputs:
       old_version: ${{ steps.bumpversion.outputs.old_ver }}
       version: ${{ steps.bumpversion.outputs.new_ver }}
-    # TODO maybe verify bumpType is valid (major, minor, patch)
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
+
+      - name: Validate Bump Part
+        run: bumpPart=${{ github.event.inputs.bumpPart }} node .github/scripts/validateInputs.js
+
       - name: Bump version and push tag
         id: bumpversion
         uses: jaumann/github-bumpversion-action@v0.0.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BUMP: ${{ github.event.inputs.bumpType }}
+          DEFAULT_BUMP: ${{ github.event.inputs.bumpPart }}
           # DRY_RUN: true
       # - name: Testing bumping
       #   run: |
@@ -65,7 +67,7 @@ jobs:
           echo "::set-output name=message:${content}"
       
       - name: Testing changelog
-        run: echo ${{ steps.changelog.outputs.message }}
+        run: echo "${{ steps.changelog.outputs.message }}"
       
       - name: Create Release
         uses: actions/create-release@v1
