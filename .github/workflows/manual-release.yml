@@ -128,6 +128,7 @@ jobs:
           # content type for tgz?? https://www.iana.org/assignments/media-types/media-types.xhtml
       - name: Upload Release Asset
         run: |
+          gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
           gh release upload v${{ needs.tag-version.outputs.version }} '${{ steps.app-name.outputs.package }}#App Package'
   
       - name: Test artifacts availability
