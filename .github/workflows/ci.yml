@@ -1,6 +1,9 @@
-name: Regular CI
+name: Postflight
 
-on: push
+on: 
+  create:
+    tags:
+      - v*
 
 jobs:
   build:
@@ -19,3 +22,7 @@ jobs:
         with:
           name: app_tgz
           path: dist/demo-splunkapp.tgz
+      
+      - name: Test availability
+        run: |
+          gh api repos/${{ github.repository }}/actions/artifacts
