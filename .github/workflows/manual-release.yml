@@ -50,15 +50,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
+      - name: Fetch tags
+        run: |
+          git fetch --unshallow --tags
+
       - name: Build changelog
         id: changelog
         run: |
-          git fetch --unshallow --tags
-          git tag -l
           content=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate)
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
+          content="${content//'%'/%25}"
+          content="${content//$'\n'/%0A}"
+          content="${content//$'\r'/%0D}"
+          echo ${content}
           echo "::set-output name=message:$content"
       
       - name: Create Release
