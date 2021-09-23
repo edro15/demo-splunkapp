@@ -57,12 +57,12 @@ jobs:
       - name: Build changelog
         id: changelog
         run: |
-          content=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate --pretty=format"%s")
+          content=$(git log v${{ needs.build.outputs.old_version }}..v${{ needs.build.outputs.version }} --oneline --decorate --pretty=format:"%s")
           content="${content//'%'/%25}"
           content="${content//$'\n'/%0A}"
           content="${content//$'\r'/%0D}"
           echo ${content}
-          echo "::set-output name=message:$content"
+          echo "::set-output name=message:${content}"
       
       - name: Testing changelog
         run: echo ${{ steps.changelog.outputs.message }}
