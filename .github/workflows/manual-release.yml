@@ -57,7 +57,7 @@ jobs:
       #     echo "Old version: ${{ steps.bumpversion.outputs.old_ver }}"
       #     echo "New version: ${{ steps.bumpversion.outputs.new_ver }}"
       #     echo "Bump type: ${{ steps.bumpversion.outputs.part }}"
-      - name: Push
+      - name: Push tags
         run: |
           remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
           git push "${remote_repo}" HEAD:${GITHUB_REF} --follow-tags --tags
@@ -109,7 +109,7 @@ jobs:
         with:
           name: app_tgz
       
-      - name: Get name
+      - name: Get artifact name
         id: app-name
         run: |
           app_package=$(ls -1 *gz | xargs basename)
@@ -123,14 +123,9 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.app-name.outputs.package }}
-          asset_name: "${{ steps.app-name.outputs.package }}#App package"
+          asset_name: ${{ steps.app-name.outputs.package }}
           asset_content_type: application/tgz
-          # content type for tgz?? https://www.iana.org/assignments/media-types/media-types.xhtml
-      # - name: Upload Release Asset
-      #   run: |
-      #     gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
-      #     gh release upload v${{ needs.tag-version.outputs.version }} '${{ steps.app-name.outputs.package }}#App Package'
-  
+
   publish:
     needs: release
     name: Deploy Release to Splunkbase
