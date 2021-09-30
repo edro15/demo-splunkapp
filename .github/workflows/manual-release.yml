@@ -20,6 +20,7 @@ jobs:
     outputs:
       old_version: ${{ steps.bumpversion.outputs.old_ver }}
       version: ${{ steps.bumpversion.outputs.new_ver }}
+      new_sha: ${{ steps.sha.outputs.SHA }}
     # Validate bump part before moving forward 
     if: contains(['major', 'minor', 'patch'], ${{ github.event.inputs.bumpPart }})
     steps:
@@ -41,17 +42,24 @@ jobs:
         run: |
           remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
           git push "${remote_repo}" HEAD:${GITHUB_REF} --follow-tags --tags
+      
+      - name: Get sha
+        id: sha
+        run: |
+          sha_new=$(git rev-parse HEAD)
+          echo $sha_new
+          echo "::set-output name=SHA::$sha_new"
 
   build:
       name: Build app
       runs-on: ubuntu-latest
+      needs: tag-version
       steps:
         - name: Checkout code
           uses: actions/checkout@v2
-        
-        - name: Fetch all previous changes
-          run: |
-            git fetch --unshallow
+          with:
+            ref: ${{ needs.tag-version.outputs.new_sha }}
+            fetch-depth: 0
 
         - name: Packaging app
           run: |
