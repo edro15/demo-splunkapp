@@ -148,7 +148,9 @@ jobs:
           echo "::set-output name=package::${app_package}"
 
       - name: Test connectivity
-        if: ${{ secrets.SPLUNKBASE_ID }} != 0 
+        env:
+          SPLUNKBASE_ID: ${{ secrets.SPLUNKBASE_ID }}
+        if: "${{ secrets.SPLUNKBASE_ID != 0 }} " 
         run: |
           curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request GET "https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/"
 
