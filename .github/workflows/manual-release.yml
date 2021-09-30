@@ -152,7 +152,7 @@ jobs:
           SPLUNKBASE_ID: ${{ secrets.SPLUNKBASE_ID }}
         # if: ${{ env.SPLUNKBASE_ID != '' }}
         run: |
-          if [ ! ${{ secrets.SPLUNKBASE_ID != '' }} ]; then exit 1; fi
+          if ! ${{ secrets.SPLUNKBASE_ID != '' }} ; then exit 1; fi
           curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request GET "https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/"
 
       # Following docs: https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submitcontentui/#Submit-content-to-Splunkbase-with-the-Release-API
