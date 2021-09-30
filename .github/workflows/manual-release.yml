@@ -148,9 +148,6 @@ jobs:
           echo "::set-output name=package::${app_package}"
 
       - name: Test connectivity
-        env:
-          SPLUNKBASE_ID: ${{ secrets.SPLUNKBASE_ID }}
-        # if: ${{ env.SPLUNKBASE_ID != '' }}
         run: |
           if ! ${{ secrets.SPLUNKBASE_ID != '' }} ; then exit 1; fi
           curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request GET "https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/"
@@ -163,4 +160,7 @@ jobs:
           tar -xf ${{ steps.app-name.outputs.package }} -C build
           source .splunkbase
           PACKAGE=$(ls build/*)
-          curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request POST https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/new_release/ -F "files[]=@${PACKAGE}" -F "filename=${{ steps.app-name.outputs.package }}" -F "splunk_versions=${{ secrets.SPLUNKBASE_SPLUNK_VERSION }}" -F "visibility=true"  
+          echo $PACKAGE
+          
+          
+      # curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request POST https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/new_release/ -F "files[]=@${PACKAGE}" -F "filename=${{ steps.app-name.outputs.package }}" -F "splunk_versions=${{ secrets.SPLUNKBASE_SPLUNK_VERSION }}" -F "visibility=true"  
