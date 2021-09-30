@@ -37,6 +37,7 @@ jobs:
   tag-version:
     name: Tag Version
     runs-on: ubuntu-latest
+    if: false
     outputs:
       old_version: ${{ steps.bumpversion.outputs.old_ver }}
       version: ${{ steps.bumpversion.outputs.new_ver }}
@@ -64,6 +65,7 @@ jobs:
 
   release:
     name: Create Release
+    if: false
     needs: 
       - build
       - tag-version
@@ -132,10 +134,32 @@ jobs:
           asset_content_type: application/tgz
 
   publish:
-    needs: release
-    name: Deploy Release to Splunkbase
+    needs: build
+    name: Upload to Splunkbase
     runs-on: ubuntu-latest
     steps:
-      - name: Placeholder for publish
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: app_tgz
+      
+      - name: Get artifact name
+        id: app-name
         run: |
-          echo "Placeholder for Splunkbase upload"
+          app_package=$(ls -1 *gz | xargs basename)
+          echo "::set-output name=package::${app_package}"
+
+      - name: Test connectivity
+        if: ${{ secrets.SPLUNKBASE_ID != 0 }} 
+        run: |
+          curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request GET "https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/"
+
+      # Following docs: https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submitcontentui/#Submit-content-to-Splunkbase-with-the-Release-API
+      - name: "Uploading on Splunkbase"
+        if: ${{ success() }}
+        run: |
+          mkdir build
+          tar -xf ${{ steps.app-name.outputs.package }}.tgz -C build
+          source .splunkbase
+          PACKAGE=$(ls build/*)
+          curl --fail -s -u ${{ secrets.SPLUNK_USER }}:${{ secrets.SPLUNK_PASS }} --request POST https://splunkbase.splunk.com/api/v1/app/${SPLUNKBASE_ID}/new_release/ -F "files[]=@${PACKAGE}" -F "filename=${{ steps.app-name.outputs.package }}.tgz" -F "splunk_versions=${{ secrets.SPLUNKBASE_SPLUNK_VERSION }}" -F "visibility=true"  
