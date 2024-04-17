@@ -1,0 +1,14 @@
+[props/source%3A%3A...ta-sw-demo%2A.log%2A]
+owner = admin
+version = 9.2.0.1
+modtime = 1713362657.162185000
+
+[props/source%3A%3A...ta_sw_demo%2A.log%2A]
+owner = admin
+version = 9.2.0.1
+modtime = 1713362657.989176000
+
+[props/sw%3Astarships]
+owner = admin
+version = 9.2.0.1
+modtime = 1713363205.203981000
