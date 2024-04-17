@@ -6,8 +6,39 @@ on:
       - packages/**
 
 jobs:
+  build:
+    name: Generate App Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install splunk-packaging-toolkit
+      
+      - name: Package app
+        run: |
+          mkdir -p ../build
+          slim package TA-sw-demo -o ../build
+        working-directory: ./packages
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged_app
+          path: build/TA-sw-demo*
+          # path: build/TA-sw-demo_${{ github.ref_name }}.tgz
+
   appinspect-cli:
     name: AppInspect CLI Validation
+    needs: build
     runs-on: ubuntu-latest
     steps:
 
@@ -26,6 +57,6 @@ jobs:
       
       - name: Run AppInspect
         run: |
-          splunk-appinspect inspect TA-sw-demo --output-file appinspect.json
+          splunk-appinspect inspect build/TA-sw-demo* --output-file appinspect.json
           exit `cat appinspect.json | jq '.summary.failure'`
         working-directory: ./packages
