@@ -29,7 +29,10 @@ jobs:
         run: |
           ucc-gen import-from-aob --addon-name TA-sw-demo
           ls ./
-          ls ./TA-sw-demo_ucc
+          ls ./TA-sw-demo_ucc/package
+          schemaVersion=2.0.0
+          jq --arg a "$schemaVersion" '.schemaVersion = $a' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
+          cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
         working-directory: ./packages
       
       - name: Package app
