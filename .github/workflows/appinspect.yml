@@ -8,65 +8,12 @@ on: push
 jobs:
   # build:
   #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
-  build:
-    name: Generate App Bundle
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install splunk-packaging-toolkit splunk-add-on-ucc-framework
-      
-      - name: Import from AoB
-        run: |
-          ucc-gen import-from-aob --addon-name TA-sw-demo
-          ls ./
-          ls ./TA-sw-demo_ucc/package
-          slim validate TA-sw-demo
-          slim validate TA-sw-demo_ucc/package
-        # schemaVersion="2.0.0"
-        # tmp=$(mktemp)
-        # jq --arg sv "$schemaVersion" '.schemaVersion = $sv' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
-        # cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
-        working-directory: ./packages
-      
-
-      
-      - name: Package app
-        run: |
-          ucc-gen build
-          ls ./
-          mkdir -p build/
-          ucc-gen package --path output/TA-sw-demo_ucc -o build/
-          ls ./
-        working-directory: ./packages/TA-sw-demo_ucc
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: packaged_app
-          path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
-          # path: build/TA-sw-demo_${{ github.ref_name }}.tgz
-
-
-  #         # http://10.202.11.96:8000/en-GB/custom/splunk_app_addon-builder/app_package/file_download?app_name=TA-sw-demo
-
-  # appinspect-cli:
-  #   name: AppInspect CLI Validation
-  #   needs: build
+  # build:
+  #   name: Generate App Bundle
   #   runs-on: ubuntu-latest
   #   steps:
-
-  #     # - name: Checkout code
-  #     #   uses: actions/checkout@v3
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
   #     - name: Setup Python
   #       uses: actions/setup-python@v4
@@ -76,21 +23,122 @@ jobs:
   #     - name: Install dependencies
   #       run: |
   #         python -m pip install --upgrade pip
-  #         python -m pip install splunk-appinspect
-
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: packaged_app
+  #         pip install splunk-packaging-toolkit splunk-add-on-ucc-framework
       
-  #     - name: Get artifact name
-  #       id: app-name
+  #     - name: Import from AoB
   #       run: |
-  #         app_package=$(ls -1 *gz | xargs basename)
-  #         echo "package=${app_package}" >> $GITHUB_OUTPUT
-      
-  #     - name: Run AppInspect
-  #       run: |
-  #         splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
-  #         exit `cat appinspect.json | jq '.summary.failure'`
+  #         ucc-gen import-from-aob --addon-name TA-sw-demo
+  #         ls ./
+  #         ls ./TA-sw-demo_ucc/package
+  #         slim validate TA-sw-demo
+  #         slim validate TA-sw-demo_ucc/package
+  #       # schemaVersion="2.0.0"
+  #       # tmp=$(mktemp)
+  #       # jq --arg sv "$schemaVersion" '.schemaVersion = $sv' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
+  #       # cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
   #       working-directory: ./packages
+      
+  build:
+    name: Generate App Bundle via Splunk
+    runs-on: ubuntu-latest
+    needs: slim-validate
+    services:
+      splunk:
+        image: splunk/splunk:9.1.3
+        env:
+          SPLUNK_START_ARGS: --answer-yes --no-prompt --accept-license
+          SPLUNK_PASSWORD: password
+          # SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
+          # SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
+          # SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
+        options: >-
+          --health-interval 30s
+          --health-timeout 5s
+          --health-retries 5
+          --name splunk
+        ports:
+          - 8000:8000
+          - 8089:8089
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy app to service container and validate
+        # NOTE using volume mapping to add the app to the container will NOT work since checkout hasn't happened yet
+        run: |
+          docker cp packages/TA-sw-demo ${{ job.services.splunk.id }}:/opt/splunk/etc/apps/TA-sw-demo
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps/TA-sw-demo
+
+      - name: Set container IP as env variable
+        run: |
+          echo "SPLUNK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.splunk.id }})" >> $GITHUB_ENV
+
+      - name: Configure MLTK permissions
+        run: |
+          curl --retry-delay 5 --retry 5 -f -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/Splunk_ML_Toolkit/acl -d sharing=global -d owner=nobody -X POST
+          echo "Check MLTK permissions"
+          curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/Splunk_ML_Toolkit/acl?output_mode=json | jq -r '.entry | .[].acl.sharing'
+
+      - name: Package app
+        run: |
+          mkdir -p build
+          cd build
+          echo "Packaging App"  
+          url=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.url')
+          echo "Downloading App $url"
+          curl -k -u admin:password -LO $url
+          ls ./
+      
+      # - name: Package app
+      #   run: |
+      #     ucc-gen build
+      #     ls ./
+      #     mkdir -p build/
+      #     ucc-gen package --path output/TA-sw-demo_ucc -o build/
+      #     ls ./
+      #   working-directory: ./packages/TA-sw-demo_ucc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged_app
+          # path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
+          path: build/*
+
+
+  appinspect-cli:
+    name: AppInspect CLI Validation
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+
+      # - name: Checkout code
+      #   uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install splunk-appinspect
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged_app
+      
+      - name: Get artifact name
+        id: app-name
+        run: |
+          app_package=$(ls -1 *gz | xargs basename)
+          echo "package=${app_package}" >> $GITHUB_OUTPUT
+      
+      - name: Run AppInspect
+        run: |
+          splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
+          exit `cat appinspect.json | jq '.summary.failure'`
+        working-directory: ./packages
