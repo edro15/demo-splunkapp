@@ -72,12 +72,6 @@ jobs:
         run: |
           echo "SPLUNK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.splunk.id }})" >> $GITHUB_ENV
 
-      - name: Configure MLTK permissions
-        run: |
-          curl --retry-delay 5 --retry 5 -f -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/Splunk_ML_Toolkit/acl -d sharing=global -d owner=nobody -X POST
-          echo "Check MLTK permissions"
-          curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/Splunk_ML_Toolkit/acl?output_mode=json | jq -r '.entry | .[].acl.sharing'
-
       - name: Package app
         run: |
           mkdir -p build
