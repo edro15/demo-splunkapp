@@ -31,7 +31,7 @@ jobs:
           ls ./
           ls ./TA-sw-demo_ucc/package
           schemaVersion=2.0.0
-          jq --arg a "$schemaVersion" '.schemaVersion = $a' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
+          jq --arg a "$schemaVersion" '.schemaVersion = $a' ./TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" ./TA-sw-demo_ucc/package/app.manifest
           cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
         working-directory: ./packages
       
