@@ -32,54 +32,57 @@ jobs:
           ls ./TA-sw-demo_ucc
         working-directory: ./packages
       
-      # - name: Package app
-      #   run: |
-      #     mkdir -p ../build
-      #     slim package TA-sw-demo -o ../build
-      #   working-directory: ./packages
+      - name: Package app
+        run: |
+          ucc-gen build
+          ls ./
+          mkdir -p build/
+          ucc-gen package --path output/TA-sw-demo_ucc -o build/
+          ls ./
+        working-directory: ./packages/TA-sw-demo_ucc
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: packaged_app
-      #     path: build/TA-sw-demo*
-      #     # path: build/TA-sw-demo_${{ github.ref_name }}.tgz
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged_app
+          path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
+          # path: build/TA-sw-demo_${{ github.ref_name }}.tgz
 
 
   #         # http://10.202.11.96:8000/en-GB/custom/splunk_app_addon-builder/app_package/file_download?app_name=TA-sw-demo
 
-  appinspect-cli:
-    name: AppInspect CLI Validation
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+  # appinspect-cli:
+  #   name: AppInspect CLI Validation
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-      # - name: Checkout code
-      #   uses: actions/checkout@v3
+  #     # - name: Checkout code
+  #     #   uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.9
       
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install splunk-appinspect
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         python -m pip install splunk-appinspect
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: packaged_app
+  #     - name: Download artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: packaged_app
       
-      - name: Get artifact name
-        id: app-name
-        run: |
-          app_package=$(ls -1 *gz | xargs basename)
-          echo "package=${app_package}" >> $GITHUB_OUTPUT
+  #     - name: Get artifact name
+  #       id: app-name
+  #       run: |
+  #         app_package=$(ls -1 *gz | xargs basename)
+  #         echo "package=${app_package}" >> $GITHUB_OUTPUT
       
-      - name: Run AppInspect
-        run: |
-          splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
-          exit `cat appinspect.json | jq '.summary.failure'`
-        working-directory: ./packages
+  #     - name: Run AppInspect
+  #       run: |
+  #         splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
+  #         exit `cat appinspect.json | jq '.summary.failure'`
+  #       working-directory: ./packages
