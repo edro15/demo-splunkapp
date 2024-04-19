@@ -75,12 +75,16 @@ jobs:
       - name: Package app
         run: |
           mkdir -p build
-          cd build
           echo "Packaging App"  
-          url=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.url')
-          echo "Downloading App $url"
-          curl -k -u admin:password -LO $url
-          ls ./
+          path=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.entry | .[].content.path')
+          echo "Downloading App $path"
+          docker cp ${{ job.services.splunk.id }}:$path build/
+          "path":"/opt/splunk/share/splunk/app_packages/TA-sw-demo.spl"
+          ls ./build
+          echo "Changing app extension spl -> tgz"
+          app_name=$(ls -1 *spl | xargs basename)
+          mv build/*.spl build/$app_name.tgz
+          ls ./build
       
       # - name: Package app
       #   run: |
