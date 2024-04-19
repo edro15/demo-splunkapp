@@ -55,7 +55,7 @@ jobs:
           ls ./build
           cd build
           echo "Changing app extension spl -> tgz"
-          app_name=$(ls -1 *spl | xargs basename)
+          app_name=$(ls *.spl | xargs -I"{}" basename {} .spl)
           echo "$app_name"
           mv $app_name.spl $app_name.tgz
           ls ./
