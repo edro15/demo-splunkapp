@@ -9,7 +9,7 @@ on: push
   #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
 jobs:
   build:
-    name: Generate App Bundle via Splunk
+    name: Generate App Bundle via REST API
     runs-on: ubuntu-latest
     services:
       splunk:
@@ -17,9 +17,9 @@ jobs:
         env:
           SPLUNK_START_ARGS: --answer-yes --no-prompt --accept-license
           SPLUNK_PASSWORD: password
-          SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
-          SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
-          SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
+          # SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
+          # SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
+          # SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
         options: >-
           --health-interval 30s
           --health-timeout 5s
@@ -43,21 +43,27 @@ jobs:
         run: |
           echo "SPLUNK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.splunk.id }})" >> $GITHUB_ENV
 
-      - name: Check AoB installation
-        run: |
-          curl --retry-delay 5 --retry 5 -f -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/splunk_app_addon-builder?output_mode=json -X GET
-
       - name: Package app
         run: |
           mkdir -p build
+          echo "Packaging App"  
+          path=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.entry | .[].content.path')
+          echo "Downloading App $path"
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/share/splunk/app_packages
+          docker cp ${{ job.services.splunk.id }}:$path build/
+
+          ls ./build
           cd build
-          curl -k -u admin:password -LO https://$SPLUNK_IP:8000/custom/splunk_app_addon-builder/app_package/file_download?app_name=TA-sw-demo
+          echo "Changing app extension spl -> tgz"
+          app_name=$(ls -1 *spl | xargs basename)
+          mv *.spl $app_name.tgz
           ls ./build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: packaged_app
+          # path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
           path: build/*
 
 
