@@ -9,7 +9,7 @@ on: push
   #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
 jobs:
   build:
-    uses: edro15/demo-splunkapp/.github/workflows/build.yml
+    uses: edro15/demo-splunkapp/.github/workflows/build.yml@master
   # build:
   #   name: Generate App Bundle via REST API
   #   runs-on: ubuntu-latest
