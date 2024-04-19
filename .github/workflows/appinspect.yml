@@ -8,13 +8,69 @@ on: push
   # build:
   #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
 jobs:
-  appinspect-cli:
-    name: AppInspect CLI Validation
+  build:
+    name: Generate App Bundle via Splunk
     runs-on: ubuntu-latest
+    services:
+      splunk:
+        image: splunk/splunk:9.1.3
+        env:
+          SPLUNK_START_ARGS: --answer-yes --no-prompt --accept-license
+          SPLUNK_PASSWORD: password
+          # SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
+          # SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
+          # SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
+        options: >-
+          --health-interval 30s
+          --health-timeout 5s
+          --health-retries 5
+          --name splunk
+        ports:
+          - 8000:8000
+          - 8089:8089
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      - name: Copy app to service container and validate
+        # NOTE using volume mapping to add the app to the container will NOT work since checkout hasn't happened yet
+        run: |
+          docker cp packages/TA-sw-demo ${{ job.services.splunk.id }}:/opt/splunk/etc/apps/TA-sw-demo
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps/TA-sw-demo
+
+      - name: Set container IP as env variable
+        run: |
+          echo "SPLUNK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.splunk.id }})" >> $GITHUB_ENV
+
+      - name: Package app
+        run: |
+          mkdir -p build
+          echo "Packaging App"  
+          docker exec -i ${{ job.services.splunk.id }} /opt/splunk/bin/splunk package app TA-sw-demo
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/system/static/app-packages
+          
+          echo "Fetching App from container"
+          docker cp ${{ job.services.splunk.id }}:/opt/splunk/share/splunk/app_packages/TA-sw-demo.spl build/
+          ls ./build
+
+          echo "Changing app extension spl -> tgz"
+          app_name=$(ls -1 *spl | xargs basename)
+          mv build/*.spl build/$app_name.tgz
+          ls ./build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged_app
+          path: build/*
+
+
+  appinspect-cli:
+    name: AppInspect CLI Validation
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -23,59 +79,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install splunk-packaging-toolkit splunk-add-on-ucc-framework splunk-appinspect
-      
-      - name: Get addon name
-        id: addon_name
-        run: |
-          ADDON_NAME=$(cat app.manifest | jq '.info.id.name')
-          echo "::set-output name=ADDON_NAME::$ADDON_NAME"
-        working-directory: ./packages/TA-sw-demo
+          python -m pip install splunk-appinspect
 
-      - name: Import from AoB
-        run: |
-          ucc-gen import-from-aob --addon-name ${{ steps.addon_name.outputs.ADDON_NAME }}
-          ls ./
-          ls ./TA-sw-demo_ucc/package
-          slim validate ${{ steps.addon_name.outputs.ADDON_NAME }}
-        working-directory: ./packages
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged_app
       
-      - name: Package app
-        run: |
-          current_version=$(cat package/app.manifest | jq -r '.info.id.version')
-          ucc-gen build --ta-version $current_version
-          ls ./
-          echo "Content of /package"
-          ls ./package
-          echo "Content of /output"
-          ls ./output
-          echo "Fix file permissions"
-          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/js/build/*
-          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/js/dependencies.txt
-          # If there is no .png files under static directory, it gives an error.
-          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/*.png || true
-          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/templates/*
-          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/nav/default.xml
-          if [ -f output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/configuration.xml ]; then
-            chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/configuration.xml
-          fi
-          if [ -f output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml ]; then
-            chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml
-          fi
-          ls ./output/${{ steps.addon_name.outputs.ADDON_NAME }}
-          echo "Creating /build and packaging"
-          mkdir -p build/
-          ucc-gen package --path output/${{ steps.addon_name.outputs.ADDON_NAME }} -o build/
-          ls ./build
-        working-directory: ./packages/TA-sw-demo_ucc
-
-      - name: Run AppInspect
+      - name: Get artifact name
+        id: app-name
         run: |
           app_package=$(ls -1 *gz | xargs basename)
-          splunk-appinspect inspect $app_package --output-file appinspect.json
+          echo "package=${app_package}" >> $GITHUB_OUTPUT
+      
+      - name: Run AppInspect
+        run: |
+          splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
           exit `cat appinspect.json | jq '.summary.failure'`
-        working-directory: ./packages/TA-sw-demo_ucc/build
-
-        # working-directory: ./packages/TA-sw-demo_ucc/output
-          # splunk-appinspect inspect ${{ steps.addon_name.outputs.ADDON_NAME }} --output-file appinspect.json
-
+        working-directory: ./packages
