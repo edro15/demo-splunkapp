@@ -56,14 +56,14 @@ jobs:
           cd build
           echo "Changing app extension spl -> tgz"
           app_name=$(ls -1 *spl | xargs basename)
-          mv *.spl $app_name.tgz
+          echo "$app_name"
+          mv $app_name.spl $app_name.tgz
           ls ./
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: packaged_app
-          # path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
           path: build/*
 
 
@@ -97,4 +97,3 @@ jobs:
         run: |
           splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
           exit `cat appinspect.json | jq '.summary.failure'`
-        working-directory: ./packages
