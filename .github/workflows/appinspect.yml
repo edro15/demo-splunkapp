@@ -42,7 +42,7 @@ jobs:
       
       - name: Package app
         run: |
-          current_version=$(cat package/app.manifest | jq '.schemaVersion')
+          current_version=$(cat package/app.manifest | jq -r '.info.id.version')
           ucc-gen build --ta-version $current_version
           ls ./
           echo "Content of /package"
@@ -62,6 +62,7 @@ jobs:
           if [ -f output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml ]; then
             chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml
           fi
+          ls ./output/${{ steps.addon_name.outputs.ADDON_NAME }}
           echo "Creating /build and packaging"
           mkdir -p build/
           ucc-gen package --path output/${{ steps.addon_name.outputs.ADDON_NAME }} -o build/
@@ -70,7 +71,11 @@ jobs:
 
       - name: Run AppInspect
         run: |
-          splunk-appinspect inspect ${{ steps.addon_name.outputs.ADDON_NAME }} --output-file appinspect.json
+          app_package=$(ls -1 *gz | xargs basename)
+          splunk-appinspect inspect $app_package --output-file appinspect.json
           exit `cat appinspect.json | jq '.summary.failure'`
-        working-directory: ./packages/TA-sw-demo_ucc/output
+        working-directory: ./packages/TA-sw-demo_ucc/build
+
+        # working-directory: ./packages/TA-sw-demo_ucc/output
+          # splunk-appinspect inspect ${{ steps.addon_name.outputs.ADDON_NAME }} --output-file appinspect.json
 

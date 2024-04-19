@@ -60,8 +60,10 @@ jobs:
       - name: Package app
         run: |
           ucc-gen build
+          echo "Creating /build and packaging"
           mkdir -p build/
           ucc-gen package --path output/TA-sw-demo -o build/
+          ls ./build
         working-directory: ./packages/TA-sw-demo_ucc
 
       - name: Upload artifact
