@@ -57,7 +57,7 @@ jobs:
           echo "Changing app extension spl -> tgz"
           app_name=$(ls -1 *spl | xargs basename)
           mv *.spl $app_name.tgz
-          ls ./build
+          ls ./
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
