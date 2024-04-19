@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir -p build
           echo "Packaging App"  
-          docker exec -i ${{ job.services.splunk.id }} /opt/splunk/bin/splunk package app TA-sw-demo
+          docker exec -i ${{ job.services.splunk.id }} sudo /opt/splunk/bin/splunk package app TA-sw-demo
           docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/system/static/app-packages
           
           echo "Fetching App from container"
