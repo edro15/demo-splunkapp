@@ -1,76 +1,15 @@
+# This is a basic workflow that is automatically triggered at pushes to the app source code
+
 name: AppInspect
 
-on: push
-  # push:
-  #   paths:
-  #     - packages/**
+on:
+  push:
+    paths:
+      - packages/**
 
-  # build:
-  #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
 jobs:
   build:
     uses: edro15/demo-splunkapp/.github/workflows/build.yml@master
-  # build:
-  #   name: Generate App Bundle via REST API
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     splunk:
-  #       image: splunk/splunk:9.1.3
-  #       env:
-  #         SPLUNK_START_ARGS: --answer-yes --no-prompt --accept-license
-  #         SPLUNK_PASSWORD: password
-  #         # SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
-  #         # SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
-  #         # SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
-  #       options: >-
-  #         --health-interval 30s
-  #         --health-timeout 5s
-  #         --health-retries 5
-  #         --name splunk
-  #       ports:
-  #         - 8000:8000
-  #         - 8089:8089
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Copy app to service container and validate
-  #       # NOTE using volume mapping to add the app to the container will NOT work since checkout hasn't happened yet
-  #       run: |
-  #         docker cp packages/TA-sw-demo ${{ job.services.splunk.id }}:/opt/splunk/etc/apps/TA-sw-demo
-  #         docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps
-  #         docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/apps/TA-sw-demo
-
-  #     - name: Ignore local.meta
-  #       # FIXME Requires manual fix beforehand!!
-  #       run: |
-  #         docker exec -i ${{ job.services.splunk.id }} sudo rm -rf /opt/splunk/etc/apps/TA-sw-demo/metadata/local.meta
-
-  #     - name: Set container IP as env variable
-  #       run: |
-  #         echo "SPLUNK_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ job.services.splunk.id }})" >> $GITHUB_ENV
-
-  #     - name: Package app
-  #       run: |
-  #         mkdir -p build
-  #         path=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.entry | .[].content.path')
-
-  #         echo "Downloading App $path"
-  #         docker exec -i ${{ job.services.splunk.id }} sudo ls -a /opt/splunk/share/splunk/app_packages
-  #         docker cp ${{ job.services.splunk.id }}:$path build/
-
-  #         cd build
-  #         echo "Changing app extension spl -> tgz"
-  #         app_name=$(ls *.spl | xargs -I"{}" basename {} .spl)
-  #         echo "$app_name"
-  #         mv $app_name.spl $app_name.tgz
-
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: packaged_app
-  #         path: build/*
-
 
   appinspect-cli:
     name: AppInspect CLI Validation
