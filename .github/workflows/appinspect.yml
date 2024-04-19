@@ -32,10 +32,6 @@ jobs:
           ls ./TA-sw-demo_ucc/package
           slim validate TA-sw-demo
         # slim validate TA-sw-demo_ucc/package
-        # schemaVersion="2.0.0"
-        # tmp=$(mktemp)
-        # jq --arg sv "$schemaVersion" '.schemaVersion = $sv' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
-        # cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
         working-directory: ./packages
       
       - name: Package app
@@ -56,8 +52,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: packaged_app
-          # path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
-          path: build/*
+          path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
+          # path: build/*
 
 
   appinspect-cli:
