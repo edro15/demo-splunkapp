@@ -48,7 +48,7 @@ jobs:
           ls ./output
           echo "Creating /build and packaging"
           mkdir -p build/
-          ucc-gen package --path output/TA-sw-demo_ucc -o build/
+          ucc-gen package --path output/TA-sw-demo -o build/
           ls ./build
         working-directory: ./packages/TA-sw-demo_ucc
 
