@@ -78,7 +78,7 @@ jobs:
           echo "Packaging App"  
           path=$(curl -k -u admin:password https://$SPLUNK_IP:8089/services/apps/local/TA-sw-demo/package?output_mode=json | jq -r '.entry | .[].content.path')
           echo "Downloading App $path"
-          docker exec -i ${{ job.services.splunk.id }} ls -a $SPLUNK_HOME/etc/system/static/app-packages
+          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/system/static/app-packages
           docker cp ${{ job.services.splunk.id }}:$path build/
           "path":"/opt/splunk/share/splunk/app_packages/TA-sw-demo.spl"
           ls ./build
