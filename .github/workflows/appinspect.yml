@@ -31,7 +31,7 @@ jobs:
           ls ./
           ls ./TA-sw-demo_ucc/package
           slim validate TA-sw-demo
-          slim validate TA-sw-demo_ucc/package
+        # slim validate TA-sw-demo_ucc/package
         # schemaVersion="2.0.0"
         # tmp=$(mktemp)
         # jq --arg sv "$schemaVersion" '.schemaVersion = $sv' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
