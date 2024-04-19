@@ -36,7 +36,7 @@ jobs:
         # tmp=$(mktemp)
         # jq --arg sv "$schemaVersion" '.schemaVersion = $sv' TA-sw-demo_ucc/package/app.manifest > "$tmp" && mv "$tmp" TA-sw-demo_ucc/package/app.manifest
         # cat ./TA-sw-demo_ucc/package/app.manifest | jq .schemaVersion
-        working-directory: ./package
+        working-directory: ./packages
       
       - name: Package app
         run: |
