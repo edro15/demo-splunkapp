@@ -42,7 +42,7 @@ jobs:
       
       - name: Package app
         run: |
-          current_version = $(cat package/app.manifest | jq '.schemaVersion')
+          current_version=$(cat package/app.manifest | jq '.schemaVersion')
           ucc-gen build --ta-version $current_version
           ls ./
           echo "Content of /package"
