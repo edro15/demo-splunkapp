@@ -17,9 +17,9 @@ jobs:
         env:
           SPLUNK_START_ARGS: --answer-yes --no-prompt --accept-license
           SPLUNK_PASSWORD: password
-          # SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
-          # SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
-          # SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
+          SPLUNK_APPS_URL: https://splunkbase.splunk.com/app/2962/release/4.2.0/download
+          SPLUNKBASE_USERNAME: ${{ secrets.SPLUNKBASE_USERNAME }}
+          SPLUNKBASE_PASSWORD: ${{ secrets.SPLUNKBASE_PASSWORD }}
         options: >-
           --health-interval 30s
           --health-timeout 5s
@@ -46,17 +46,8 @@ jobs:
       - name: Package app
         run: |
           mkdir -p build
-          echo "Packaging App"  
-          docker exec -i ${{ job.services.splunk.id }} sudo /opt/splunk/bin/splunk package app TA-sw-demo
-          docker exec -i ${{ job.services.splunk.id }} ls -a /opt/splunk/etc/system/static/app-packages
-          
-          echo "Fetching App from container"
-          docker cp ${{ job.services.splunk.id }}:/opt/splunk/share/splunk/app_packages/TA-sw-demo.spl build/
-          ls ./build
-
-          echo "Changing app extension spl -> tgz"
-          app_name=$(ls -1 *spl | xargs basename)
-          mv build/*.spl build/$app_name.tgz
+          cd build
+          curl -k -u admin:password -LO https://$SPLUNK_IP:8000/custom/splunk_app_addon-builder/app_package/file_download?app_name=TA-sw-demo
           ls ./build
 
       - name: Upload artifact
