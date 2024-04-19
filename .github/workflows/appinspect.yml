@@ -8,8 +8,8 @@ on: push
   # build:
   #    uses: artemrys/workflow-splunk-addon/.github/workflows/reusable-build-release.yaml@v0.3.0
 jobs:
-  build:
-    name: Generate App Bundle
+  appinspect-cli:
+    name: AppInspect CLI Validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,73 +25,52 @@ jobs:
           python -m pip install --upgrade pip
           pip install splunk-packaging-toolkit splunk-add-on-ucc-framework splunk-appinspect
       
+      - name: Get addon name
+        id: addon_name
+        run: |
+          ADDON_NAME=$(cat app.manifest | jq '.info.id.name')
+          echo "::set-output name=ADDON_NAME::$ADDON_NAME"
+        working-directory: ./packages/TA-sw-demo
+
       - name: Import from AoB
         run: |
-          ucc-gen import-from-aob --addon-name TA-sw-demo
+          ucc-gen import-from-aob --addon-name ${{ steps.addon_name.outputs.ADDON_NAME }}
           ls ./
           ls ./TA-sw-demo_ucc/package
-          slim validate TA-sw-demo
-        # slim validate TA-sw-demo_ucc/package
+          slim validate ${{ steps.addon_name.outputs.ADDON_NAME }}
         working-directory: ./packages
       
       - name: Package app
         run: |
-          ucc-gen build
+          current_version = $(cat package/app.manifest | jq '.schemaVersion')
+          ucc-gen build --ta-version $current_version
           ls ./
           echo "Content of /package"
           ls ./package
           echo "Content of /output"
           ls ./output
+          echo "Fix file permissions"
+          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/js/build/*
+          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/js/dependencies.txt
+          # If there is no .png files under static directory, it gives an error.
+          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/static/*.png || true
+          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/appserver/templates/*
+          chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/nav/default.xml
+          if [ -f output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/configuration.xml ]; then
+            chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/configuration.xml
+          fi
+          if [ -f output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml ]; then
+            chmod 644 output/${{ steps.addon_name.outputs.ADDON_NAME }}/default/data/ui/views/inputs.xml
+          fi
           echo "Creating /build and packaging"
           mkdir -p build/
-          ucc-gen package --path output/TA-sw-demo -o build/
+          ucc-gen package --path output/${{ steps.addon_name.outputs.ADDON_NAME }} -o build/
           ls ./build
         working-directory: ./packages/TA-sw-demo_ucc
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: packaged_app
-      #     path: packages/TA-sw-demo_ucc/build/TA-sw-demo*
       - name: Run AppInspect
         run: |
-          splunk-appinspect inspect TA-sw-demo --output-file appinspect.json
+          splunk-appinspect inspect ${{ steps.addon_name.outputs.ADDON_NAME }} --output-file appinspect.json
           exit `cat appinspect.json | jq '.summary.failure'`
         working-directory: ./packages/TA-sw-demo_ucc/output
 
-  # appinspect-cli:
-  #   name: AppInspect CLI Validation
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Setup Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: 3.9
-      
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         python -m pip install splunk-appinspect
-
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: packaged_app
-      
-  #     - name: Get artifact name
-  #       id: app-name
-  #       run: |
-  #         app_package=$(ls -1 *gz | xargs basename)
-  #         echo "package=${app_package}" >> $GITHUB_OUTPUT
-      
-  #     - name: Run AppInspect
-  #       run: |
-  #         splunk-appinspect inspect TA-sw-demo --output-file appinspect.json
-  #         exit `cat appinspect.json | jq '.summary.failure'`
-  #       working-directory: ./packages/TA-sw-demo_ucc/output
-  #       # splunk-appinspect inspect ${{ steps.app-name.outputs.package }} --output-file appinspect.json
