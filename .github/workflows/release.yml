@@ -45,10 +45,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: packaged_app
-      
+          run-id: ${{ github.event.workflow_run.id }}
+ 
       - name: Create Release and Upload Asset
         run: |
           package_name=$(ls -1 *gz | xargs basename)
