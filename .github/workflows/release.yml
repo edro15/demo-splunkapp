@@ -3,10 +3,9 @@
 name: Release
 
 on:
-  push:
-    # Push events to every tag including hierarchical tags like v1.0/beta
-    tags:        
-      - '*' 
+  push
+    # tags:        
+    #   - '*' 
 
 permissions:
   contents: write
@@ -48,9 +47,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: packaged_app
-          run-id: ${{ github.event.workflow_run.id }}
- 
+      
       - name: Create Release and Upload Asset
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           package_name=$(ls -1 *gz | xargs basename)
           gh release create ${{ github.ref_name }} $package_name
