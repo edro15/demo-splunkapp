@@ -6,7 +6,7 @@ on:
   push:
     # Push events to every tag including hierarchical tags like v1.0/beta
     tags:        
-      - '**' 
+      - '*' 
 
 permissions:
   contents: write
