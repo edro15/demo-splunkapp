@@ -3,9 +3,9 @@
 name: Release
 
 on:
-  push
-    # tags:        
-    #   - '*' 
+  push:
+    tags:        
+      - '**' 
 
 permissions:
   contents: write
