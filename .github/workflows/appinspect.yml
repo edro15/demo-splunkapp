@@ -5,7 +5,7 @@ name: AppInspect
 on:
   push:
     paths:
-      - packages/**
+      - 'packages/**'
 
 jobs:
   build:
