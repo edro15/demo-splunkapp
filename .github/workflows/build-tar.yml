@@ -15,8 +15,8 @@ jobs:
         id: app
         run: |
           ls -la
-          app_id=$(cat splunk-*/app.manifest | jq -r '.info.id.name')
-          app_version=$(cat splunk-*/app.manifest | jq -r '.info.id.version')
+          app_id=$(cat TA-*/app.manifest | jq -r '.info.id.name')
+          app_version=$(cat TA-*/app.manifest | jq -r '.info.id.version')
           echo "name=${app_id}" >> $GITHUB_OUTPUT
           echo "version=${app_version}" >> $GITHUB_OUTPUT
         working-directory: ./packages
