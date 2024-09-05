@@ -34,6 +34,7 @@ jobs:
       - name: Get artifact name
         id: app-name
         run: |
+          ls -la
           app_package=$(ls -1 *gz | xargs basename)
           echo "package=${app_package}" >> $GITHUB_OUTPUT
       
