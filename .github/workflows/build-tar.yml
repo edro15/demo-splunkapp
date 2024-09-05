@@ -14,7 +14,6 @@ jobs:
       - name: Get app info
         id: app
         run: |
-          ls -la
           app_id=$(cat TA-*/app.manifest | jq -r '.info.id.name')
           app_version=$(cat TA-*/app.manifest | jq -r '.info.id.version')
           echo "name=${app_id}" >> $GITHUB_OUTPUT
@@ -24,7 +23,7 @@ jobs:
       - name: Bundle app source
         run: |
           mkdir -p build
-          tar -C packages -zcvf build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz .
+          COPYFILE_DISABLE=1 tar -C packages -zcvf build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz .
   
       - name: Upload artifact
         uses: actions/upload-artifact@v4
