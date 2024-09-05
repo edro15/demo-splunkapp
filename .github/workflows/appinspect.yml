@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    uses: edro15/demo-splunkapp/.github/workflows/build.yml@master
+    uses: edro15/demo-splunkapp/.github/workflows/build-tar.yml@master
 
   appinspect-cli:
     name: AppInspect CLI Validation
