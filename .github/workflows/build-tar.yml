@@ -24,9 +24,10 @@ jobs:
         run: |
           mkdir -p build
           tar -C packages -zcvf build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz .
+          ls -la build
   
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: packaged_app
-          path: build/*
+          path: build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz
