@@ -34,8 +34,11 @@ jobs:
       - name: Get artifact name
         id: app-name
         run: |
+          mkdir -p build
           app_package=$(ls -1 *gz | xargs basename)
           echo "package=${app_package}" >> $GITHUB_OUTPUT
+          mv ${app_package} build/
+          ls -la build
       
       - name: Run AppInspect
         run: |
