@@ -14,6 +14,7 @@ jobs:
       - name: Get app info
         id: app
         run: |
+          ls -la
           app_id=$(cat splunk-*/app.manifest | jq -r '.info.id.name')
           app_version=$(cat splunk-*/app.manifest | jq -r '.info.id.version')
           echo "name=${app_id}" >> $GITHUB_OUTPUT
@@ -24,10 +25,9 @@ jobs:
         run: |
           mkdir -p build
           tar -C packages -zcvf build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz .
-          ls -la build
   
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: packaged_app
-          path: build/${{ steps.app.outputs.name }}-${{ steps.app.outputs.version }}.tgz
+          path: build/*
