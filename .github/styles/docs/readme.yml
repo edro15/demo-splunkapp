@@ -16,7 +16,7 @@ Usage:
   match: '^## Usage'
   non-empty: true
 
-Contributing:
+Contribution:
   match: '^## Contributing'
   non-empty: true
 

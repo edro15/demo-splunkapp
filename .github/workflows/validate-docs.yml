@@ -20,13 +20,6 @@ jobs:
 
           # Add the section for Markdown files and specify the custom style
           crudini --set .vale.ini '*.md' BasedOnStyles docs
-
-      - name: Debug Configuration file
-        run: |
-          cat .vale.ini
-          ls -la
-          ls -la .github
-          ls -la .github/styles
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
@@ -50,7 +43,6 @@ jobs:
         with:
           files: docs/
           fail_on_error: true
-          debug: true
 
       - name: Debug results
         run: |
