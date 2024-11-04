@@ -23,7 +23,7 @@ jobs:
         working-directory: ./.github
       - name: Debug Configuration file
         run: |
-          cat .vale.ini
+          cat .github/.vale.ini
           ls -la
           ls -la .github
           ls -la .github/styles
