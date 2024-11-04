@@ -1,24 +1,11 @@
 # readme.yml
-message: "The '{{section}}' section is required and should contain content."
+extends: existence
+message: '%s' section is required"
 level: error
-
-rules:
-  Introduction:
-    match: '^(## Introduction)'
-    non-empty: true
-
-  Installation:
-    match: '^(## Installation)'
-    non-empty: true
-
-  Usage:
-    match: '^(## Usage)'
-    non-empty: true
-
-  Contributing:
-    match: '^(## Contributing)'
-    non-empty: true
-
-  # License:
-  #   match: '^(## License)'
-  #   non-empty: true
+scope: heading
+ignorecase: false
+tokens:
+  - '^(## Introduction)'
+  - '^(## Installation)'
+  - '^(## Usage)'
+  - '^(## Contributing)'
