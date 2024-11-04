@@ -1,0 +1,48 @@
+name: Assess Documentation
+
+on: push
+
+jobs:
+  readme-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install crudini
+        run: sudo apt-get update && sudo apt-get install -y crudini
+      - name: Create Vale configuration file
+        run: |
+          # Initialize the .vale.ini file and set general configurations
+          crudini --set .vale.ini '' StylesPath .github/styles
+          crudini --set .vale.ini '' MinAlertLevel error
+
+          # Add the section for Markdown files and specify the custom style
+          crudini --set .vale.ini 'docs/README.md' BasedOnStyles readme
+      - name: Check whether general README exists
+        run: |
+          if [ ! -f README.md ]; then
+            echo "README.md file is missing"
+            exit 1
+          fi
+      - name: Check whether docs exists and contains a real README
+        run: |
+          if [ -d "./docs" ]; then
+            echo "Folder exists."
+            if [ ! -f "./docs/README.md" ]; then
+              echo "docs/README.md file is missing"
+              exit 1
+            fi
+          else
+            echo "Folder 'docs' does not exist."
+            exit 1
+          fi
+      - name: Run Vale
+        uses: errata-ai/vale-action@v2.1.1
+        with:
+          files: docs/
+          fail_on_error: true
+
+      - name: Debug results
+        run: |
+          ls -la
+
