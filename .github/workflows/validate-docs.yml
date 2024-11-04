@@ -19,11 +19,11 @@ jobs:
           crudini --set .vale.ini '' MinAlertLevel error
 
           # Add the section for Markdown files and specify the custom style
-          crudini --set .vale.ini '*.md' BasedOnStyles readme
-        working-directory: ./.github
+          crudini --set .vale.ini '*.md' BasedOnStyles docs
+
       - name: Debug Configuration file
         run: |
-          cat .github/.vale.ini
+          cat .vale.ini
           ls -la
           ls -la .github
           ls -la .github/styles
