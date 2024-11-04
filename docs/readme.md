@@ -1,7 +1,7 @@
 # Demo Splunk App
 This is project is just a playground to perform various tests on a Splunk App
 
-## Introduction
+### Introduction
 TODO
 
 ## Installation

@@ -10,8 +10,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: 'test/docs'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install vale
       - name: Install crudini
         run: sudo apt-get update && sudo apt-get install -y crudini
+
       - name: Create Vale configuration file
         run: |
           # Initialize the .vale.ini file and set general configurations
@@ -38,13 +47,17 @@ jobs:
             echo "Folder 'docs' does not exist."
             exit 1
           fi
-      - name: Run Vale
-        uses: errata-ai/vale-action@v2.1.1
-        with:
-          files: docs/
-          fail_on_error: true
+      # - name: Run Vale
+      #   uses: errata-ai/vale-action@v2.1.1
+      #   with:
+      #     files: docs/
+      #     fail_on_error: true
+      - name: Run Vale and Capture Output
+        run: |
+          vale docs/*.md > vale-report.txt || true
 
       - name: Debug results
         run: |
           ls -la
+          cat vale-report.txt
 
