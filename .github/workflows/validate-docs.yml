@@ -23,6 +23,7 @@ jobs:
       - name: Debug Configuration file
         run: |
           cat .vale.ini
+          ls -la
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
