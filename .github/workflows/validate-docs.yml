@@ -19,7 +19,7 @@ jobs:
           crudini --set .vale.ini '' MinAlertLevel error
 
           # Add the section for Markdown files and specify the custom style
-          crudini --set .vale.ini 'docs/README.md' BasedOnStyles readme
+          crudini --set .vale.ini '*.md' BasedOnStyles readme
       - name: Debug Configuration file
         run: |
           cat .vale.ini
