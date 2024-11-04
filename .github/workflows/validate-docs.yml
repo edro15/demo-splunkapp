@@ -24,6 +24,8 @@ jobs:
         run: |
           cat .vale.ini
           ls -la
+          ls -la .github
+          ls -la .github/styles
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
