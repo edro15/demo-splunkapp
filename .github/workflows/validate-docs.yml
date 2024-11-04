@@ -28,8 +28,8 @@ jobs:
         run: |
           if [ -d "./docs" ]; then
             echo "Folder exists."
-            if [ ! -f "./docs/README.md" ]; then
-              echo "docs/README.md file is missing"
+            if [ ! -f "./docs/readme.md" ]; then
+              echo "docs/readme.md file is missing"
               exit 1
             fi
           else
