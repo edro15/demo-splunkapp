@@ -1,6 +1,6 @@
 # readme.yml
 extends: existence
-message: '%s' section is required"
+message: "'%s' section is required"
 level: error
 scope: heading
 ignorecase: false
