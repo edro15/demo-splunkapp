@@ -16,10 +16,10 @@ Usage:
   match: '^## Usage'
   non-empty: true
 
-Contribution:
-  match: '^## Contributing'
-  non-empty: true
-
-# License:
-#   match: '^## License'
+# Contributing:
+#   match: '^## Contributing'
 #   non-empty: true
+
+License:
+  match: '^## License'
+  non-empty: true
