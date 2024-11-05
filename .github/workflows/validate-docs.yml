@@ -29,6 +29,7 @@ jobs:
 
           # Add the section for Markdown files and specify the custom style
           crudini --set .vale.ini '*.md' BasedOnStyles 'docs, Microsoft'
+          crudini --set .vale.ini '*.md' Microsoft.HeadingAcronyms warning
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
