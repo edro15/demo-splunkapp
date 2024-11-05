@@ -54,7 +54,7 @@ jobs:
       #     fail_on_error: true
       - name: Run Vale and Capture Output
         run: |
-          vale --output=json docs/*.md
+          vale --output=JSON docs/*.md
 
       - name: Debug results
         run: |
