@@ -31,7 +31,7 @@ jobs:
           crudini --set .vale.ini '' Packages Microsoft
 
           # Add the section for Markdown files and specify the custom style
-          crudini --set .vale.ini '*.md' BasedOnStyles docs, Microsoft
+          crudini --set .vale.ini '*.md' BasedOnStyles docs, Vale, Microsoft
 
           # Download and install packages
           vale sync
@@ -55,7 +55,7 @@ jobs:
           fi
       - name: Run Vale and Capture Output
         run: |
-          vale --list-styles
+          vale ls-config
           vale --output=JSON docs/*.md > vale-report.json || true
 
       - name: Debug results
