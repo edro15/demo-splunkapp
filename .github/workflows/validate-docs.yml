@@ -29,9 +29,6 @@ jobs:
 
           # Add the section for Markdown files and specify the custom style
           crudini --set .vale.ini '*.md' BasedOnStyles 'docs, Microsoft'
-
-          # Download and install packages
-          vale sync
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
@@ -52,8 +49,9 @@ jobs:
           fi
       - name: Run Vale and Capture Output
         run: |
-          ls -la .github/styles
-          cat .vale.ini
+          # Download and install packages
+          vale sync
+          # Execute
           vale --output=JSON docs/*.md > vale-report.json
 
       - name: Debug results
