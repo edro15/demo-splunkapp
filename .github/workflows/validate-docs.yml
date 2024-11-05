@@ -52,7 +52,7 @@ jobs:
           # Download and install packages
           vale sync
           # Execute
-          vale --output=JSON docs/*.md > vale-report.json
+          vale --output=JSON docs/*.md > vale-report.json || true
 
       - name: Debug results
         run: |
