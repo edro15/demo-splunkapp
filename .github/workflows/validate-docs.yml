@@ -17,10 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install vale
-      - name: Install crudini
-        run: sudo apt-get update && sudo apt-get install -y crudini
-
+          python -m pip install vale crudini
       - name: Create Vale configuration file
         run: |
           # Initialize the .vale.ini file and set general configurations
