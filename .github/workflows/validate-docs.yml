@@ -27,8 +27,14 @@ jobs:
           crudini --set .vale.ini '' StylesPath .github/styles
           crudini --set .vale.ini '' MinAlertLevel error
 
+          # Add other packages
+          crudini --set .vale.ini '' Packages Microsoft
+
           # Add the section for Markdown files and specify the custom style
           crudini --set .vale.ini '*.md' BasedOnStyles docs
+
+          # Download and install packages
+          vale sync
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
@@ -47,11 +53,6 @@ jobs:
             echo "Folder 'docs' does not exist."
             exit 1
           fi
-      # - name: Run Vale
-      #   uses: errata-ai/vale-action@v2.1.1
-      #   with:
-      #     files: docs/
-      #     fail_on_error: true
       - name: Run Vale and Capture Output
         run: |
           vale --output=JSON docs/*.md > vale-report.json || true
