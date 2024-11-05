@@ -22,14 +22,15 @@ jobs:
         run: |
           # Initialize the .vale.ini file and set general configurations
           crudini --set .vale.ini '' StylesPath .github/styles
-          crudini --set .vale.ini '' MinAlertLevel error
+          crudini --set .vale.ini '' MinAlertLevel warning
 
           # Add other packages
           crudini --set .vale.ini '' Packages Microsoft
 
           # Add the section for Markdown files and specify the custom style
           crudini --set .vale.ini '*.md' BasedOnStyles 'docs, Microsoft'
-          crudini --set .vale.ini '*.md' Microsoft.HeadingAcronyms warning
+          # crudini --set .vale.ini '*.md' Microsoft.HeadingAcronyms warning
+          cat .vale.ini
       - name: Check whether general README exists
         run: |
           if [ ! -f README.md ]; then
